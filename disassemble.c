@@ -175,7 +175,7 @@ void decode_sib(int op_ordinal, CurrentInst *curr_inst) {
     int base = SIB_BASE(curr_inst->sib);
 
     // https://css.csail.mit.edu/6.858/2014/readings/i386/s17_02.htm
-    if (base == 0b100 && MODRM_MOD(curr_inst->modrm) == 0b00) {
+    if (base == 0b101 && MODRM_MOD(curr_inst->modrm) == 0b00) {
         // no base, operand is of the form [index*scale+disp]
         curr_inst->operand[op_ordinal].addr_method = ASM_ADDR_INDEX_SCALE;
     } else {
@@ -634,6 +634,10 @@ int translate_inst_into_intel(CurrentInst curr_inst, char buf[], size_t bufsize,
                 }
 
                 switch (curr_inst.displacement.size) {
+                    case 0:
+                        // no displacement
+                        sprintf(buf, "%s[%s]", buf, regname[curr_inst.operand[i].reg - ADDR_AL]);
+                        break;
                     case 8:
                         sprintf(buf, "%s[%s%c0x%x]", buf, regname[curr_inst.operand[i].reg - ADDR_AL],
                                 SIGN(curr_inst.displacement.disp8), MAGNITUDE(curr_inst.displacement.disp8));
@@ -700,6 +704,11 @@ int translate_inst_into_intel(CurrentInst curr_inst, char buf[], size_t bufsize,
 
                 if (curr_inst.operand[i].real_scale == 1) {
                     switch (curr_inst.displacement.size) {
+                        case 0:
+                            // no displacement
+                            sprintf(buf, "%s[%s+%s]", buf, regname[curr_inst.operand[i].reg - ADDR_AL],
+                                    regname[curr_inst.operand[i].index_reg - ADDR_AL]);
+                            break;
                         case 8:
                             sprintf(buf, "%s[%s+%s%c0x%x]", buf, regname[curr_inst.operand[i].reg - ADDR_AL],
                                     regname[curr_inst.operand[i].index_reg - ADDR_AL],
@@ -720,6 +729,11 @@ int translate_inst_into_intel(CurrentInst curr_inst, char buf[], size_t bufsize,
                     }
                 } else {
                     switch (curr_inst.displacement.size) {
+                        case 0:
+                            // no displacement
+                            sprintf(buf, "%s[%s+%s*%d]", buf, regname[curr_inst.operand[i].reg - ADDR_AL],
+                                    regname[curr_inst.operand[i].index_reg - ADDR_AL], curr_inst.operand[i].real_scale);
+                            break;
                         case 8:
                             sprintf(buf, "%s[%s+%s*%d%c0x%x]", buf, regname[curr_inst.operand[i].reg - ADDR_AL],
                                     regname[curr_inst.operand[i].index_reg - ADDR_AL], curr_inst.operand[i].real_scale,
