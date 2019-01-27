@@ -137,7 +137,9 @@ Inst standard_insts[] = {
         {0x89, "mov", 2, BIT_WIDTH_UNSPECIFIED, {ADDR_MODRM_GPREG_MEM, OPR_WORD_DWORD, ADDR_MODRM_GREG, OPR_WORD_DWORD}},
         {0x8a, "mov", 2, BIT_WIDTH_UNSPECIFIED, {ADDR_MODRM_GREG, OPR_BYTE, ADDR_MODRM_GPREG_MEM, OPR_BYTE}},
         {0x8b, "mov", 2, BIT_WIDTH_UNSPECIFIED, {ADDR_MODRM_GREG, OPR_WORD_DWORD, ADDR_MODRM_GPREG_MEM, OPR_WORD_DWORD}},
+        {0x8c, "mov", 2, BIT_WIDTH_UNSPECIFIED, {ADDR_MODRM_GPREG_MEM, OPR_WORD, ADDR_MODRM_SREG, OPR_WORD}},
         {0x8d, "lea", 2, BIT_WIDTH_UNSPECIFIED, {ADDR_MODRM_GREG, OPR_WORD_DWORD, ADDR_MODRM_MEM, OPR_WORD_DWORD}},
+        {0x8e, "mov", 2, BIT_WIDTH_UNSPECIFIED, {ADDR_MODRM_SREG, OPR_WORD, ADDR_MODRM_GPREG_MEM, OPR_WORD}},
         {0x8f, "pop", 1, BIT_WIDTH_UNSPECIFIED, {ADDR_MODRM_GPREG_MEM, OPR_WORD_DWORD}},
         {0x90, "nop", 0, BIT_WIDTH_UNSPECIFIED},
         {0x91, "xchg", 2, BIT_WIDTH_UNSPECIFIED, {ADDR_AX, OPR_UNSPECIFIED, ADDR_CX, OPR_UNSPECIFIED}},
@@ -414,7 +416,7 @@ const char *regname[] = {
         "sp", "bp", "si", "di",             // 16-bit pointer/index registers
         "eax", "ecx", "edx", "ebx",         // 32-bit general registers
         "esp", "ebp", "esi", "edi",           // 32-bit pointer/index registers
-        "ds", "es", "fs", "gs", "ss", "cs",          // segment registers
+        "es", "cs", "ss", "ds", "fs", "gs",          // segment registers
         "cr0", "cr1", "cr2", "cr3", "cr4", "cr5", "cr6", "cr7",         // control registers
         "dr0", "dr1", "dr2", "dr3", "dr4", "dr5", "dr6", "dr7",         // debug registers
         "tr0", "tr1", "tr2", "tr3", "tr4", "tr5", "tr6", "tr7",         // test registers

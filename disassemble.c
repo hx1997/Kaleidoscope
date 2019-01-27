@@ -337,7 +337,7 @@ void decode_modrm_gpreg_mem(unsigned const char buf[], int op_ordinal, Disassemb
     }
 }
 
-void decode_modrm_cdtreg(int op_ordinal, CurrentInst *curr_inst, AddressingMethod base_reg) {
+void decode_modrm_cdstreg(int op_ordinal, CurrentInst *curr_inst, AddressingMethod base_reg) {
     int regopcode = MODRM_REGOPCODE(curr_inst->modrm);
     curr_inst->operand[op_ordinal].addr_method = ASM_ADDR_REG;
     curr_inst->operand[op_ordinal].reg = base_reg + regopcode;
@@ -364,13 +364,16 @@ void decode_modrm(unsigned const char buf[], int op_ordinal, Disassembly *dis, C
             decode_modrm_greg_only(op_ordinal, curr_inst);
             break;
         case ADDR_CONTROL_REG:
-            decode_modrm_cdtreg(op_ordinal, curr_inst, ADDR_CR0);
+            decode_modrm_cdstreg(op_ordinal, curr_inst, ADDR_CR0);
             break;
         case ADDR_DEBUG_REG:
-            decode_modrm_cdtreg(op_ordinal, curr_inst, ADDR_DR0);
+            decode_modrm_cdstreg(op_ordinal, curr_inst, ADDR_DR0);
             break;
         case ADDR_MODRM_TREG:
-            decode_modrm_cdtreg(op_ordinal, curr_inst, ADDR_TR0);
+            decode_modrm_cdstreg(op_ordinal, curr_inst, ADDR_TR0);
+            break;
+        case ADDR_MODRM_SREG:
+            decode_modrm_cdstreg(op_ordinal, curr_inst, ADDR_ES);
             break;
         default:
             return;
@@ -385,6 +388,13 @@ int decode_operand(unsigned const char buf[], int op_ordinal, Disassembly *dis, 
     switch (opinfo.addr_method) {
         // register addressing
         case ADDR_AL:
+        case ADDR_BL:
+        case ADDR_CL:
+        case ADDR_DL:
+        case ADDR_AH:
+        case ADDR_BH:
+        case ADDR_CH:
+        case ADDR_DH:
         case ADDR_CS:
         case ADDR_DS:
         case ADDR_ES:
@@ -422,6 +432,7 @@ int decode_operand(unsigned const char buf[], int op_ordinal, Disassembly *dis, 
         case ADDR_MODRM_MEM:
         case ADDR_MODRM_GPREG_MEM:
         case ADDR_MODRM_MOD_GREG_ONLY:
+        case ADDR_MODRM_SREG:
         case ADDR_CONTROL_REG:
         case ADDR_DEBUG_REG:
         case ADDR_MODRM_TREG:
@@ -578,6 +589,10 @@ int translate_inst_into_intel(CurrentInst curr_inst, char buf[], size_t bufsize,
                     } else if (curr_inst.effective_opsize == BIT_WIDTH_32) {
                         sprintf(buf, "%sdword ptr ", buf);
                     }
+                } else if (curr_inst.operand[i].optype == OPR_WORD) {
+                    sprintf(buf, "%sword ptr ", buf);
+                } else if (curr_inst.operand[i].optype == OPR_DWORD) {
+                    sprintf(buf, "%sdword ptr ", buf);
                 }
 
                 switch (curr_inst.displacement.size) {
@@ -766,21 +781,21 @@ void init_disasm_struct(Disassembly *dis) {
     dis->asm_buf_size = ASM_BUFSIZE;
 }
 
-int disasm_byte_buf_x86(unsigned char buf[], int bufsize, int start_address) {
+int disasm_byte_buf_x86(unsigned char buf[], int bufsize, int base_address) {
     int delta;
     Disassembly dis;
 
     init_disasm_struct(&dis);
 
     // decode each instruction in buf
-    for (int i = 0; i < bufsize; i += delta, start_address += delta) {
+    for (int i = 0; i < bufsize; i += delta, base_address += delta) {
         CurrentInst curr_inst = {0};
         delta = disasm_one_inst_x86(buf, &dis, &curr_inst);
         for (int j = 0; j < delta; j++) {
             printf("%02x ", buf[i+j]);
         }
         char asmbuf[128];
-        translate_inst_into_intel(curr_inst, asmbuf, 128, start_address, delta);
+        translate_inst_into_intel(curr_inst, asmbuf, 128, base_address, delta);
         printf("\t\t\t%s\n", asmbuf);
         dis.asm_buf[0] = '\0';
     }
