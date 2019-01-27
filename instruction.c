@@ -244,6 +244,61 @@ Inst standard_insts[] = {
         {0, 0, 0, 0}
 };
 
+Inst extended_insts[] = {
+        {0x02, "lar", 2, BIT_WIDTH_UNSPECIFIED, {ADDR_MODRM_GREG, OPR_WORD, ADDR_MODRM_GPREG_MEM, OPR_WORD}},
+        {0x03, "lsl", 2, BIT_WIDTH_UNSPECIFIED, {ADDR_MODRM_GREG, OPR_WORD_DWORD, ADDR_MODRM_GPREG_MEM, OPR_WORD}},
+        {0x06, "clts", 0, BIT_WIDTH_UNSPECIFIED},
+        {0x20, "mov", 2, BIT_WIDTH_UNSPECIFIED, {ADDR_MODRM_MOD_GREG_ONLY, OPR_DWORD, ADDR_CONTROL_REG, OPR_DWORD}},
+        {0x21, "mov", 2, BIT_WIDTH_UNSPECIFIED, {ADDR_MODRM_MOD_GREG_ONLY, OPR_DWORD, ADDR_DEBUG_REG, OPR_DWORD}},
+        {0x22, "mov", 2, BIT_WIDTH_UNSPECIFIED, {ADDR_CONTROL_REG, OPR_DWORD, ADDR_MODRM_MOD_GREG_ONLY, OPR_DWORD}},
+        {0x23, "mov", 2, BIT_WIDTH_UNSPECIFIED, {ADDR_DEBUG_REG, OPR_DWORD, ADDR_MODRM_MOD_GREG_ONLY, OPR_DWORD}},
+        {0x24, "mov", 2, BIT_WIDTH_UNSPECIFIED, {ADDR_MODRM_MOD_GREG_ONLY, OPR_DWORD, ADDR_MODRM_TREG, OPR_DWORD}},
+        {0x26, "mov", 2, BIT_WIDTH_UNSPECIFIED, {ADDR_MODRM_TREG, OPR_DWORD, ADDR_MODRM_MOD_GREG_ONLY, OPR_DWORD}},
+        {0x80, "jo", 1, BIT_WIDTH_UNSPECIFIED, {ADDR_RELATIVE, OPR_WORD_DWORD}},
+        {0x81, "jno", 1, BIT_WIDTH_UNSPECIFIED, {ADDR_RELATIVE, OPR_WORD_DWORD}},
+        {0x82, "jb", 1, BIT_WIDTH_UNSPECIFIED, {ADDR_RELATIVE, OPR_WORD_DWORD}},
+        {0x83, "jnb", 1, BIT_WIDTH_UNSPECIFIED, {ADDR_RELATIVE, OPR_WORD_DWORD}},
+        {0x84, "jz", 1, BIT_WIDTH_UNSPECIFIED, {ADDR_RELATIVE, OPR_WORD_DWORD}},
+        {0x85, "jnz", 1, BIT_WIDTH_UNSPECIFIED, {ADDR_RELATIVE, OPR_WORD_DWORD}},
+        {0x86, "jbe", 1, BIT_WIDTH_UNSPECIFIED, {ADDR_RELATIVE, OPR_WORD_DWORD}},
+        {0x87, "jnbe", 1, BIT_WIDTH_UNSPECIFIED, {ADDR_RELATIVE, OPR_WORD_DWORD}},
+        {0x88, "js", 1, BIT_WIDTH_UNSPECIFIED, {ADDR_RELATIVE, OPR_WORD_DWORD}},
+        {0x89, "jns", 1, BIT_WIDTH_UNSPECIFIED, {ADDR_RELATIVE, OPR_WORD_DWORD}},
+        {0x8a, "jp", 1, BIT_WIDTH_UNSPECIFIED, {ADDR_RELATIVE, OPR_WORD_DWORD}},
+        {0x8b, "jnp", 1, BIT_WIDTH_UNSPECIFIED, {ADDR_RELATIVE, OPR_WORD_DWORD}},
+        {0x8c, "jl", 1, BIT_WIDTH_UNSPECIFIED, {ADDR_RELATIVE, OPR_WORD_DWORD}},
+        {0x8d, "jnl", 1, BIT_WIDTH_UNSPECIFIED, {ADDR_RELATIVE, OPR_WORD_DWORD}},
+        {0x8e, "jle", 1, BIT_WIDTH_UNSPECIFIED, {ADDR_RELATIVE, OPR_WORD_DWORD}},
+        {0x8f, "jnle", 1, BIT_WIDTH_UNSPECIFIED, {ADDR_RELATIVE, OPR_WORD_DWORD}},
+        {0x90, "seto", 1, BIT_WIDTH_UNSPECIFIED, {ADDR_MODRM_GPREG_MEM, OPR_BYTE}},
+        {0x91, "setno", 1, BIT_WIDTH_UNSPECIFIED, {ADDR_MODRM_GPREG_MEM, OPR_BYTE}},
+        {0x92, "setb", 1, BIT_WIDTH_UNSPECIFIED, {ADDR_MODRM_GPREG_MEM, OPR_BYTE}},
+        {0x93, "setnb", 1, BIT_WIDTH_UNSPECIFIED, {ADDR_MODRM_GPREG_MEM, OPR_BYTE}},
+        {0x94, "setz", 1, BIT_WIDTH_UNSPECIFIED, {ADDR_MODRM_GPREG_MEM, OPR_BYTE}},
+        {0x95, "setnz", 1, BIT_WIDTH_UNSPECIFIED, {ADDR_MODRM_GPREG_MEM, OPR_BYTE}},
+        {0x96, "setbe", 1, BIT_WIDTH_UNSPECIFIED, {ADDR_MODRM_GPREG_MEM, OPR_BYTE}},
+        {0x97, "setnbe", 1, BIT_WIDTH_UNSPECIFIED, {ADDR_MODRM_GPREG_MEM, OPR_BYTE}},
+        {0x98, "sets", 1, BIT_WIDTH_UNSPECIFIED, {ADDR_MODRM_GPREG_MEM, OPR_BYTE}},
+        {0x99, "setns", 1, BIT_WIDTH_UNSPECIFIED, {ADDR_MODRM_GPREG_MEM, OPR_BYTE}},
+        {0x9a, "setp", 1, BIT_WIDTH_UNSPECIFIED, {ADDR_MODRM_GPREG_MEM, OPR_BYTE}},
+        {0x9b, "setnp", 1, BIT_WIDTH_UNSPECIFIED, {ADDR_MODRM_GPREG_MEM, OPR_BYTE}},
+        {0x9c, "setl", 1, BIT_WIDTH_UNSPECIFIED, {ADDR_MODRM_GPREG_MEM, OPR_BYTE}},
+        {0x9d, "setnl", 1, BIT_WIDTH_UNSPECIFIED, {ADDR_MODRM_GPREG_MEM, OPR_BYTE}},
+        {0x9e, "setle", 1, BIT_WIDTH_UNSPECIFIED, {ADDR_MODRM_GPREG_MEM, OPR_BYTE}},
+        {0x9f, "setnle", 1, BIT_WIDTH_UNSPECIFIED, {ADDR_MODRM_GPREG_MEM, OPR_BYTE}},
+        {0xa0, "push", 1, BIT_WIDTH_UNSPECIFIED, {ADDR_FS, OPR_WORD_DWORD}},
+        {0xa1, "pop", 1, BIT_WIDTH_UNSPECIFIED, {ADDR_FS, OPR_WORD_DWORD}},
+        {0xa8, "push", 1, BIT_WIDTH_UNSPECIFIED, {ADDR_GS, OPR_WORD_DWORD}},
+        {0xa9, "pop", 1, BIT_WIDTH_UNSPECIFIED, {ADDR_GS, OPR_WORD_DWORD}},
+        {0xaf, "imul", 2, BIT_WIDTH_UNSPECIFIED, {ADDR_MODRM_GREG, OPR_WORD_DWORD, ADDR_MODRM_GPREG_MEM, OPR_WORD_DWORD}},
+        {0xb6, "movzx", 2, BIT_WIDTH_UNSPECIFIED, {ADDR_MODRM_GREG, OPR_WORD_DWORD, ADDR_MODRM_GPREG_MEM, OPR_BYTE}},
+        {0xb7, "movzx", 2, BIT_WIDTH_UNSPECIFIED, {ADDR_MODRM_GREG, OPR_WORD_DWORD, ADDR_MODRM_GPREG_MEM, OPR_WORD}},
+        {0xbe, "movsx", 2, BIT_WIDTH_UNSPECIFIED, {ADDR_MODRM_GREG, OPR_WORD_DWORD, ADDR_MODRM_GPREG_MEM, OPR_BYTE}},
+        {0xbf, "movsx", 2, BIT_WIDTH_UNSPECIFIED, {ADDR_MODRM_GREG, OPR_WORD_DWORD, ADDR_MODRM_GPREG_MEM, OPR_WORD}},
+        {0, 0, 0, 0}
+
+};
+
 ExtendedGroupInst extended_group_insts[] = {
         {0x80, "add", 2, BIT_WIDTH_UNSPECIFIED, {ADDR_MODRM_GPREG_MEM, OPR_BYTE, ADDR_IMM, OPR_BYTE}, 0},
         {0x80, "or", 2, BIT_WIDTH_UNSPECIFIED, {ADDR_MODRM_GPREG_MEM, OPR_BYTE, ADDR_IMM, OPR_BYTE}, 1},
@@ -359,5 +414,8 @@ const char *regname[] = {
         "sp", "bp", "si", "di",             // 16-bit pointer/index registers
         "eax", "ecx", "edx", "ebx",         // 32-bit general registers
         "esp", "ebp", "esi", "edi",           // 32-bit pointer/index registers
-        "ds", "es", "fs", "gs", "ss", "cs"          // segment registers
+        "ds", "es", "fs", "gs", "ss", "cs",          // segment registers
+        "cr0", "cr1", "cr2", "cr3", "cr4", "cr5", "cr6", "cr7",         // control registers
+        "dr0", "dr1", "dr2", "dr3", "dr4", "dr5", "dr6", "dr7",         // debug registers
+        "tr0", "tr1", "tr2", "tr3", "tr4", "tr5", "tr6", "tr7",         // test registers
 };

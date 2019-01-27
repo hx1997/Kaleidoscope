@@ -111,7 +111,18 @@ InstInfo decode_opcodes(unsigned const char buf[], Disassembly *dis, CurrentInst
         return standard_insts[i].info;
     } else {
         if (*ptr_opcode == 0x0f) {
-            // two-byte opcodes not implemented
+            curr_inst->opcode2 = *(ptr_opcode + 1);
+            for (i = 0; extended_insts[i].info.opsize != 0 && extended_insts[i].opcode <= curr_inst->opcode2; i++) {
+                if (extended_insts[i].opcode == curr_inst->opcode2) {
+                    if (curr_inst->effective_opsize & extended_insts[i].info.opsize) {
+                        curr_inst->mnemonic = extended_insts[i].info.mnemonic;
+                        curr_inst->opcount = extended_insts[i].info.opcount;
+                        dis->curr_inst_offset++;
+                        break;
+                    }
+                }
+            }
+            return extended_insts[i].info;
         } else {
             curr_inst->modrm = *(ptr_opcode + 1);
             for (i = 0; extended_group_insts[i].info.opsize != 0 && extended_group_insts[i].opcode <= curr_inst->opcode1; i++) {
@@ -164,7 +175,7 @@ void decode_sib(int op_ordinal, CurrentInst *curr_inst) {
     int base = SIB_BASE(curr_inst->sib);
 
     // https://css.csail.mit.edu/6.858/2014/readings/i386/s17_02.htm
-    if (base > 0b100 && MODRM_MOD(curr_inst->modrm) == 0b00) {
+    if (base == 0b100 && MODRM_MOD(curr_inst->modrm) == 0b00) {
         // no base, operand is of the form [index*scale+disp]
         curr_inst->operand[op_ordinal].addr_method = ASM_ADDR_INDEX_SCALE;
     } else {
@@ -208,7 +219,7 @@ void decode_modrm_greg(int op_ordinal, CurrentInst *curr_inst, OperandInfo opinf
     curr_inst->operand[op_ordinal].addr_method = ASM_ADDR_REG;
 
     // is it DWORD type operand? if so, set the base to ADDR_AX (see next comment)
-    if (opinfo.optype == OPR_WORD_DWORD && curr_inst->effective_opsize == BIT_WIDTH_32) {
+    if ((opinfo.optype == OPR_WORD_DWORD && curr_inst->effective_opsize == BIT_WIDTH_32) || (opinfo.optype == OPR_DWORD)) {
         curr_inst->operand[op_ordinal].reg = ADDR_AX;
     } else {
         curr_inst->operand[op_ordinal].reg = ADDR_AL;
@@ -311,7 +322,7 @@ void decode_modrm_gpreg_mem(unsigned const char buf[], int op_ordinal, Disassemb
         curr_inst->operand[op_ordinal].addr_method = ASM_ADDR_REG;
 
         // is it DWORD type operand? if so, set the base to ADDR_AX (see next comment)
-        if (opinfo.optype == OPR_WORD_DWORD && curr_inst->effective_opsize == BIT_WIDTH_32) {
+        if ((opinfo.optype == OPR_WORD_DWORD && curr_inst->effective_opsize == BIT_WIDTH_32) || (opinfo.optype == OPR_DWORD)) {
             curr_inst->operand[op_ordinal].reg = ADDR_AX;
         } else {
             curr_inst->operand[op_ordinal].reg = ADDR_AL;
@@ -326,6 +337,18 @@ void decode_modrm_gpreg_mem(unsigned const char buf[], int op_ordinal, Disassemb
     }
 }
 
+void decode_modrm_cdtreg(int op_ordinal, CurrentInst *curr_inst, AddressingMethod base_reg) {
+    int regopcode = MODRM_REGOPCODE(curr_inst->modrm);
+    curr_inst->operand[op_ordinal].addr_method = ASM_ADDR_REG;
+    curr_inst->operand[op_ordinal].reg = base_reg + regopcode;
+}
+
+void decode_modrm_greg_only(int op_ordinal, CurrentInst *curr_inst) {
+    int rm = MODRM_RM(curr_inst->modrm);
+    curr_inst->operand[op_ordinal].addr_method = ASM_ADDR_REG;
+    curr_inst->operand[op_ordinal].reg = ADDR_EAX + rm;
+}
+
 void decode_modrm(unsigned const char buf[], int op_ordinal, Disassembly *dis, CurrentInst *curr_inst, OperandInfo opinfo) {
     switch (opinfo.addr_method) {
         case ADDR_MODRM_GREG:
@@ -336,6 +359,18 @@ void decode_modrm(unsigned const char buf[], int op_ordinal, Disassembly *dis, C
             break;
         case ADDR_MODRM_GPREG_MEM:
             decode_modrm_gpreg_mem(buf, op_ordinal, dis,curr_inst, opinfo);
+            break;
+        case ADDR_MODRM_MOD_GREG_ONLY:
+            decode_modrm_greg_only(op_ordinal, curr_inst);
+            break;
+        case ADDR_CONTROL_REG:
+            decode_modrm_cdtreg(op_ordinal, curr_inst, ADDR_CR0);
+            break;
+        case ADDR_DEBUG_REG:
+            decode_modrm_cdtreg(op_ordinal, curr_inst, ADDR_DR0);
+            break;
+        case ADDR_MODRM_TREG:
+            decode_modrm_cdtreg(op_ordinal, curr_inst, ADDR_TR0);
             break;
         default:
             return;
@@ -386,6 +421,10 @@ int decode_operand(unsigned const char buf[], int op_ordinal, Disassembly *dis, 
         case ADDR_MODRM_GREG:
         case ADDR_MODRM_MEM:
         case ADDR_MODRM_GPREG_MEM:
+        case ADDR_MODRM_MOD_GREG_ONLY:
+        case ADDR_CONTROL_REG:
+        case ADDR_DEBUG_REG:
+        case ADDR_MODRM_TREG:
             // Make sure we increment dis->curr_inst_offset only once,
             // because ModR/M occupies 1 byte at most
             if (!curr_inst->is_modrm_decoded) {
@@ -531,9 +570,9 @@ int translate_inst_into_intel(CurrentInst curr_inst, char buf[], size_t bufsize,
                 sprintf(buf, "%s%s", buf, regname[curr_inst.operand[i].reg - ADDR_AL]);
                 break;
             case ASM_ADDR_MEM_DIRECT:
-                if (curr_inst.operand[0].optype == OPR_BYTE) {
+                if (curr_inst.operand[i].optype == OPR_BYTE) {
                     sprintf(buf, "%sbyte ptr ", buf);
-                } else if (curr_inst.operand[0].optype == OPR_WORD_DWORD) {
+                } else if (curr_inst.operand[i].optype == OPR_WORD_DWORD) {
                     if (curr_inst.effective_opsize == BIT_WIDTH_16) {
                         sprintf(buf, "%sword ptr ", buf);
                     } else if (curr_inst.effective_opsize == BIT_WIDTH_32) {
@@ -571,9 +610,9 @@ int translate_inst_into_intel(CurrentInst curr_inst, char buf[], size_t bufsize,
                 }
                 break;
             case ASM_ADDR_REG_INDIRECT:
-                if (curr_inst.operand[0].optype == OPR_BYTE) {
+                if (curr_inst.operand[i].optype == OPR_BYTE) {
                     sprintf(buf, "%sbyte ptr ", buf);
-                } else if (curr_inst.operand[0].optype == OPR_WORD_DWORD) {
+                } else if (curr_inst.operand[i].optype == OPR_WORD_DWORD) {
                     if (curr_inst.effective_opsize == BIT_WIDTH_16) {
                         sprintf(buf, "%sword ptr ", buf);
                     } else if (curr_inst.effective_opsize == BIT_WIDTH_32) {
@@ -584,9 +623,9 @@ int translate_inst_into_intel(CurrentInst curr_inst, char buf[], size_t bufsize,
                 sprintf(buf, "%s[%s]", buf, regname[curr_inst.operand[i].reg - ADDR_AL]);
                 break;
             case ASM_ADDR_REG_RELATIVE:
-                if (curr_inst.operand[0].optype == OPR_BYTE) {
+                if (curr_inst.operand[i].optype == OPR_BYTE) {
                     sprintf(buf, "%sbyte ptr ", buf);
-                } else if (curr_inst.operand[0].optype == OPR_WORD_DWORD) {
+                } else if (curr_inst.operand[i].optype == OPR_WORD_DWORD) {
                     if (curr_inst.effective_opsize == BIT_WIDTH_16) {
                         sprintf(buf, "%sword ptr ", buf);
                     } else if (curr_inst.effective_opsize == BIT_WIDTH_32) {
@@ -612,9 +651,9 @@ int translate_inst_into_intel(CurrentInst curr_inst, char buf[], size_t bufsize,
                 }
                 break;
             case ASM_ADDR_INDEX_SCALE:
-                if (curr_inst.operand[0].optype == OPR_BYTE) {
+                if (curr_inst.operand[i].optype == OPR_BYTE) {
                     sprintf(buf, "%sbyte ptr ", buf);
-                } else if (curr_inst.operand[0].optype == OPR_WORD_DWORD) {
+                } else if (curr_inst.operand[i].optype == OPR_WORD_DWORD) {
                     if (curr_inst.effective_opsize == BIT_WIDTH_16) {
                         sprintf(buf, "%sword ptr ", buf);
                     } else if (curr_inst.effective_opsize == BIT_WIDTH_32) {
@@ -630,9 +669,9 @@ int translate_inst_into_intel(CurrentInst curr_inst, char buf[], size_t bufsize,
                 }
                 break;
             case ASM_ADDR_BASE_INDEX_SCALE:
-                if (curr_inst.operand[0].optype == OPR_BYTE) {
+                if (curr_inst.operand[i].optype == OPR_BYTE) {
                     sprintf(buf, "%sbyte ptr ", buf);
-                } else if (curr_inst.operand[0].optype == OPR_WORD_DWORD) {
+                } else if (curr_inst.operand[i].optype == OPR_WORD_DWORD) {
                     if (curr_inst.effective_opsize == BIT_WIDTH_16) {
                         sprintf(buf, "%sword ptr ", buf);
                     } else if (curr_inst.effective_opsize == BIT_WIDTH_32) {
@@ -649,9 +688,9 @@ int translate_inst_into_intel(CurrentInst curr_inst, char buf[], size_t bufsize,
                 }
                 break;
             case ASM_ADDR_RELATIVE_BASE_INDEX:
-                if (curr_inst.operand[0].optype == OPR_BYTE) {
+                if (curr_inst.operand[i].optype == OPR_BYTE) {
                     sprintf(buf, "%sbyte ptr ", buf);
-                } else if (curr_inst.operand[0].optype == OPR_WORD_DWORD) {
+                } else if (curr_inst.operand[i].optype == OPR_WORD_DWORD) {
                     if (curr_inst.effective_opsize == BIT_WIDTH_16) {
                         sprintf(buf, "%sword ptr ", buf);
                     } else if (curr_inst.effective_opsize == BIT_WIDTH_32) {
