@@ -793,18 +793,18 @@ int disasm_byte_buf_x86(unsigned char buf[], unsigned int bufsize, int start_add
     for (int i = 0; i < bufsize; i += delta, start_address += delta) {
         CurrentInst curr_inst = {0};
         delta = disasm_one_inst_x86(buf, &dis, &curr_inst);
-        printf("0x%x: ", start_address);
+        printf("%08x: ", start_address);
 
         // print the opcode. 50 should suffice because the longest possible x86 inst is 15 bytes.
         char opcode_str[50] = "";
         for (int j = 0; j < delta; j++) {
             sprintf(opcode_str, "%s%02x ", opcode_str, buf[i+j]);
         }
-        printf("%-15s ", opcode_str);
+        printf("%-20s ", opcode_str);
 
         char asmbuf[128];
         translate_inst_into_intel(curr_inst, asmbuf, 128, start_address, delta);
-        printf("\t\t\t%s\n", asmbuf);
+        printf("%s\n", asmbuf);
         dis.asm_buf[0] = '\0';
     }
     return 0;
