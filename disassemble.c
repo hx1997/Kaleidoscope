@@ -89,8 +89,8 @@ InstInfo decode_opcodes(unsigned const char buf[], Disassembly *dis, CurrentInst
     unsigned const char *ptr_opcode = buf + dis->curr_inst_offset;
     curr_inst->opcode1 = *ptr_opcode;
     int is_extended = is_opcode_extended(*ptr_opcode);
-    
-    // FIXME: ugly code!
+
+    // FIXME: ugly copy-and-paste programming!
     if (!is_extended) {
         for (i = 0; standard_insts[i].info.opsize != 0 && standard_insts[i].opcode <= curr_inst->opcode1; i++) {
             if (standard_insts[i].opcode == curr_inst->opcode1) {
