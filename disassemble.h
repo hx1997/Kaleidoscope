@@ -70,7 +70,8 @@ typedef struct {
     uint32_t curr_inst_offset;
 } Disassembly;
 
-int disasm_byte_buf(unsigned char buf[], int bufsize, int start_address);
+int disasm_byte_buf(unsigned char buf[], unsigned int bufsize, int start_address);
+int disasm_pe_file(const char *file, unsigned int size, long int start_address);
 
 extern Inst standard_insts[];
 extern Inst extended_insts[];

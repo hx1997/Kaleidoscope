@@ -17,6 +17,9 @@ typedef enum { BIT_WIDTH_16 = 0x1, BIT_WIDTH_32 = 0x2, BIT_WIDTH_64 = 0x4, BIT_W
 typedef struct {
     ISA mode_isa;
     BitWidth mode_bitwidth;
+    const char *disasm_file;
+    unsigned int size_to_disasm;
+    long int start_address;
 } DisassemblerConfig;
 extern DisassemblerConfig cf;
 

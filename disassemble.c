@@ -5,6 +5,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
+#include "peparser.h"
+#include <winnt.h>
 #include "disassemble.h"
 #include "instruction.h"
 #include "config.h"
@@ -781,28 +783,34 @@ void init_disasm_struct(Disassembly *dis) {
     dis->asm_buf_size = ASM_BUFSIZE;
 }
 
-int disasm_byte_buf_x86(unsigned char buf[], int bufsize, int base_address) {
+int disasm_byte_buf_x86(unsigned char buf[], unsigned int bufsize, int start_address) {
     int delta;
     Disassembly dis;
 
     init_disasm_struct(&dis);
 
     // decode each instruction in buf
-    for (int i = 0; i < bufsize; i += delta, base_address += delta) {
+    for (int i = 0; i < bufsize; i += delta, start_address += delta) {
         CurrentInst curr_inst = {0};
         delta = disasm_one_inst_x86(buf, &dis, &curr_inst);
+        printf("0x%x: ", start_address);
+
+        // print the opcode. 50 should suffice because the longest possible x86 inst is 15 bytes.
+        char opcode_str[50] = "";
         for (int j = 0; j < delta; j++) {
-            printf("%02x ", buf[i+j]);
+            sprintf(opcode_str, "%s%02x ", opcode_str, buf[i+j]);
         }
+        printf("%-15s ", opcode_str);
+
         char asmbuf[128];
-        translate_inst_into_intel(curr_inst, asmbuf, 128, base_address, delta);
+        translate_inst_into_intel(curr_inst, asmbuf, 128, start_address, delta);
         printf("\t\t\t%s\n", asmbuf);
         dis.asm_buf[0] = '\0';
     }
     return 0;
 }
 
-int disasm_byte_buf(unsigned char buf[], int bufsize, int start_address) {
+int disasm_byte_buf(unsigned char buf[], unsigned int bufsize, int start_address) {
     int ret = 0;
 
     switch (cf.mode_isa) {
@@ -812,4 +820,48 @@ int disasm_byte_buf(unsigned char buf[], int bufsize, int start_address) {
     }
 
     return ret;
+}
+
+int disasm_pe_file(const char *file, unsigned int size, long int start_address) {
+    if (!file || size <= 0) {
+        fprintf(stderr, "disasm_pe_file(): invalid arguments!\n");
+        return -1;
+    }
+
+    FILE *fp = fopen(file, "rb");
+    if (!fp) {
+        fprintf(stderr, "disasm_pe_file(): error opening file %s!\n", file);
+        return -1;
+    }
+
+    fseek(fp, 0, SEEK_END);
+    long int file_size = ftell(fp);
+    if (file_size < size || file_size < start_address) {
+        fprintf(stderr, "disasm_pe_file(): specified file size too big!\n");
+        return -1;
+    }
+
+    // if start_address is negative, set it to the address of the PE entry point
+    if (start_address < 0) {
+        long int rva;
+        start_address = get_pe_ep_addr(fp, &rva);
+        if (start_address <= 0) {
+            return -1;
+        }
+        fseek(fp, start_address, SEEK_SET);
+        start_address = rva;
+    } else {
+        fseek(fp, start_address, SEEK_SET);
+    }
+
+    // allocate a buffer of 'size' bytes
+    unsigned char *buf = malloc(sizeof(unsigned char) * size);
+    // read 'size' bytes from 'file' and disassemble it
+    size_t bytes_read = fread(buf, sizeof(unsigned char), size, fp);
+    if (bytes_read != size) {
+        fprintf(stderr, "disasm_pe_file(): error reading file %s!\n", file);
+        return -1;
+    }
+
+    return disasm_byte_buf(buf, size, start_address);
 }
