@@ -34,17 +34,6 @@ static inline uint32_t u32(unsigned const char buf[]) {
     return (buf[0] | (uint32_t)(buf[1] << 8u) | (uint32_t)(buf[2] << 16u) | (uint32_t)(buf[3] << 24u));
 }
 
-static inline uint32_t u_auto(unsigned const char buf[]) {
-    switch (cf.mode_bitwidth) {
-        case BIT_WIDTH_16:
-            return u16(buf);
-        case BIT_WIDTH_32:
-            return u32(buf);
-        default:
-            return 0;
-    }
-}
-
 int is_prefix(unsigned const char byte) {
     return (byte == 0x26 || byte == 0x2e || byte == 0x36 || byte == 0x3e
             || byte == 0x64 || byte == 0x65 || byte == 0x66 || byte == 0x67
