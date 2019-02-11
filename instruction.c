@@ -297,7 +297,7 @@ Inst extended_insts[] = {
         {0xb7, "movzx", 2, BIT_WIDTH_UNSPECIFIED, {ADDR_MODRM_GREG, OPR_WORD_DWORD, ADDR_MODRM_GPREG_MEM, OPR_WORD}},
         {0xbe, "movsx", 2, BIT_WIDTH_UNSPECIFIED, {ADDR_MODRM_GREG, OPR_WORD_DWORD, ADDR_MODRM_GPREG_MEM, OPR_BYTE}},
         {0xbf, "movsx", 2, BIT_WIDTH_UNSPECIFIED, {ADDR_MODRM_GREG, OPR_WORD_DWORD, ADDR_MODRM_GPREG_MEM, OPR_WORD}},
-        {0, 0, 0, 0}
+        {0, 0, 0, 0, 0}
 };
 
 ExtendedGroupInst extended_group_insts[] = {
@@ -406,7 +406,7 @@ ExtendedGroupInst extended_group_insts[] = {
         {0xff, "jmp", 1, BIT_WIDTH_UNSPECIFIED, {ADDR_MODRM_GPREG_MEM, OPR_WORD_DWORD}, 4},
         //{0xff, "jmpf", 1, BIT_WIDTH_UNSPECIFIED, {ADDR_MODRM_GPREG_MEM, OPR_WORD_DWORD}, 5},
         {0xff, "push", 1, BIT_WIDTH_UNSPECIFIED, {ADDR_MODRM_GPREG_MEM, OPR_WORD_DWORD}, 6},
-        {0, 0, 0, 0}
+        {0, 0, 0, 0, 0}
 };
 
 int standard_insts_len = sizeof(standard_insts) / sizeof(standard_insts[0]);

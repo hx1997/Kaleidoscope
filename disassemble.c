@@ -94,7 +94,7 @@ InstInfo decode_opcodes(unsigned const char buf[], Disassembly *dis, CurrentInst
     if (!is_extended) {
         // standard one-byte opcode
         i = binary_search_lower(standard_insts, 0, standard_insts_len - 1, curr_inst->opcode1);
-        if (i < 0) return standard_insts[0xff].info;
+        if (i < 0) return standard_insts[standard_insts_len-1].info;    // not found; return an empty entry
         for (; standard_insts[i].opcode == curr_inst->opcode1; i++) {
             if (curr_inst->effective_opsize & standard_insts[i].info.opsize) {
                 curr_inst->mnemonic = standard_insts[i].info.mnemonic;
@@ -108,7 +108,7 @@ InstInfo decode_opcodes(unsigned const char buf[], Disassembly *dis, CurrentInst
             // two-byte opcode
             curr_inst->opcode2 = *(ptr_opcode + 1);
             i = binary_search_lower(extended_insts, 0, extended_insts_len - 1, curr_inst->opcode2);
-            if (i < 0) return extended_insts[0xff].info;
+            if (i < 0) return extended_insts[extended_insts_len-1].info;    // not found; return an empty entry
             for (; extended_insts[i].opcode == curr_inst->opcode2; i++) {
                 if (curr_inst->effective_opsize & extended_insts[i].info.opsize) {
                     curr_inst->mnemonic = extended_insts[i].info.mnemonic;
