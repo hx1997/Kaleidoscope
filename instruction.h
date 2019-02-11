@@ -132,4 +132,12 @@ typedef struct {
     uint8_t opcode_ex;
 } ExtendedGroupInst;
 
+extern Inst standard_insts[];
+extern Inst extended_insts[];
+extern ExtendedGroupInst extended_group_insts[];
+extern int standard_insts_len;
+extern int extended_insts_len;
+extern int extended_group_insts_len;
+extern const char *regname[];
+
 #endif //KALEIDOSCOPE_INSTRUCTION_H

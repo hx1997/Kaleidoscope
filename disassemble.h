@@ -74,9 +74,4 @@ typedef struct {
 int disasm_byte_buf(unsigned char buf[], unsigned int bufsize, unsigned long int start_address);
 int disasm_pe_file(const char *file, unsigned int size, DWORD start_address);
 
-extern Inst standard_insts[];
-extern Inst extended_insts[];
-extern ExtendedGroupInst extended_group_insts[];
-extern const char *regname[];
-
 #endif //KALEIDOSCOPE_DISASSEMBLE_H

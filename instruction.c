@@ -96,11 +96,11 @@ Inst standard_insts[] = {
         {0x5d, "pop", 1, BIT_WIDTH_UNSPECIFIED, {ADDR_BP, OPR_WORD_DWORD}},
         {0x5e, "pop", 1, BIT_WIDTH_UNSPECIFIED, {ADDR_SI, OPR_WORD_DWORD}},
         {0x5f, "pop", 1, BIT_WIDTH_UNSPECIFIED, {ADDR_DI, OPR_WORD_DWORD}},
-        {0x60, "pusha", 0, BIT_WIDTH_UNSPECIFIED},
         {0x60, "pushaw", 0, BIT_WIDTH_16},
+        {0x60, "pusha", 0, BIT_WIDTH_UNSPECIFIED},
         {0x60, "pushad", 0, BIT_WIDTH_32},
-        {0x61, "popa", 0, BIT_WIDTH_UNSPECIFIED},
         {0x61, "popaw", 0, BIT_WIDTH_16},
+        {0x61, "popa", 0, BIT_WIDTH_UNSPECIFIED},
         {0x61, "popad", 0, BIT_WIDTH_32},
         {0x63, "arpl", 2, BIT_WIDTH_UNSPECIFIED, {ADDR_MODRM_GPREG_MEM, OPR_WORD, ADDR_MODRM_GREG, OPR_WORD}},
         {0x68, "push", 1, BIT_WIDTH_UNSPECIFIED, {ADDR_IMM, OPR_WORD_DWORD}},
@@ -154,11 +154,11 @@ Inst standard_insts[] = {
         {0x99, "cwd", 0, BIT_WIDTH_16},
         {0x99, "cdq", 0, BIT_WIDTH_32 | BIT_WIDTH_64},
         {0x9b, "wait", 0, BIT_WIDTH_UNSPECIFIED},
-        {0x9c, "pushf", 0, BIT_WIDTH_UNSPECIFIED},
         {0x9c, "pushfw", 0, BIT_WIDTH_16},
+        {0x9c, "pushf", 0, BIT_WIDTH_UNSPECIFIED},
         {0x9c, "pushfd", 0, BIT_WIDTH_32},
-        {0x9d, "popf", 0, BIT_WIDTH_UNSPECIFIED},
         {0x9d, "popfw", 0, BIT_WIDTH_16},
+        {0x9d, "popf", 0, BIT_WIDTH_UNSPECIFIED},
         {0x9d, "popfd", 0, BIT_WIDTH_32},
         {0x9e, "sahf", 0, BIT_WIDTH_UNSPECIFIED},
         {0x9f, "lahf", 0, BIT_WIDTH_UNSPECIFIED},
@@ -210,8 +210,8 @@ Inst standard_insts[] = {
         {0xcc, "int 3", 0, BIT_WIDTH_UNSPECIFIED},
         {0xcd, "int", 1, BIT_WIDTH_UNSPECIFIED, {ADDR_IMM, OPR_BYTE}},
         {0xce, "into", 0, BIT_WIDTH_UNSPECIFIED},
-        {0xcf, "iret", 0, BIT_WIDTH_UNSPECIFIED},
         {0xcf, "iretw", 0, BIT_WIDTH_16},
+        {0xcf, "iret", 0, BIT_WIDTH_UNSPECIFIED},
         {0xcf, "iretd", 0, BIT_WIDTH_32},
         {0xd4, "aam", 1, BIT_WIDTH_UNSPECIFIED, {ADDR_IMM, OPR_BYTE}},
         {0xd5, "aad", 1, BIT_WIDTH_UNSPECIFIED, {ADDR_IMM, OPR_BYTE}},
@@ -243,7 +243,7 @@ Inst standard_insts[] = {
         {0xfb, "sti", 0, BIT_WIDTH_UNSPECIFIED},
         {0xfc, "cld", 0, BIT_WIDTH_UNSPECIFIED},
         {0xfd, "std", 0, BIT_WIDTH_UNSPECIFIED},
-        {0, 0, 0, 0}
+        {0, 0, 0, 0, 0}
 };
 
 Inst extended_insts[] = {
@@ -298,7 +298,6 @@ Inst extended_insts[] = {
         {0xbe, "movsx", 2, BIT_WIDTH_UNSPECIFIED, {ADDR_MODRM_GREG, OPR_WORD_DWORD, ADDR_MODRM_GPREG_MEM, OPR_BYTE}},
         {0xbf, "movsx", 2, BIT_WIDTH_UNSPECIFIED, {ADDR_MODRM_GREG, OPR_WORD_DWORD, ADDR_MODRM_GPREG_MEM, OPR_WORD}},
         {0, 0, 0, 0}
-
 };
 
 ExtendedGroupInst extended_group_insts[] = {
@@ -409,6 +408,10 @@ ExtendedGroupInst extended_group_insts[] = {
         {0xff, "push", 1, BIT_WIDTH_UNSPECIFIED, {ADDR_MODRM_GPREG_MEM, OPR_WORD_DWORD}, 6},
         {0, 0, 0, 0}
 };
+
+int standard_insts_len = sizeof(standard_insts) / sizeof(standard_insts[0]);
+int extended_insts_len = sizeof(extended_insts) / sizeof(extended_insts[0]);
+int extended_group_insts_len = sizeof(extended_group_insts) / sizeof(extended_group_insts[0]);
 
 const char *regname[] = {
         "al", "cl", "dl", "bl", "ah", "ch", "dh", "bh",         // 8-bit general registers

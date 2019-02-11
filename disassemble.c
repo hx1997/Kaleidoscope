@@ -9,6 +9,7 @@
 #include "disassemble.h"
 #include "instruction.h"
 #include "config.h"
+#include "search.h"
 
 #define MODRM_MOD(modrm) (((modrm) & 0b11000000u) >> 6u)
 #define MODRM_REGOPCODE(modrm) (((modrm) & 0b00111000u) >> 3u)
@@ -91,31 +92,34 @@ InstInfo decode_opcodes(unsigned const char buf[], Disassembly *dis, CurrentInst
 
     // FIXME: ugly copy-and-paste programming!
     if (!is_extended) {
-        for (i = 0; standard_insts[i].info.opsize != 0 && standard_insts[i].opcode <= curr_inst->opcode1; i++) {
-            if (standard_insts[i].opcode == curr_inst->opcode1) {
-                if (curr_inst->effective_opsize & standard_insts[i].info.opsize) {
-                    curr_inst->mnemonic = standard_insts[i].info.mnemonic;
-                    curr_inst->opcount = standard_insts[i].info.opcount;
-                    break;
-                }
+        // standard one-byte opcode
+        i = binary_search_lower(standard_insts, 0, standard_insts_len - 1, curr_inst->opcode1);
+        if (i < 0) return standard_insts[0xff].info;
+        for (; standard_insts[i].opcode == curr_inst->opcode1; i++) {
+            if (curr_inst->effective_opsize & standard_insts[i].info.opsize) {
+                curr_inst->mnemonic = standard_insts[i].info.mnemonic;
+                curr_inst->opcount = standard_insts[i].info.opcount;
+                break;
             }
         }
         return standard_insts[i].info;
     } else {
         if (*ptr_opcode == 0x0f) {
+            // two-byte opcode
             curr_inst->opcode2 = *(ptr_opcode + 1);
-            for (i = 0; extended_insts[i].info.opsize != 0 && extended_insts[i].opcode <= curr_inst->opcode2; i++) {
-                if (extended_insts[i].opcode == curr_inst->opcode2) {
-                    if (curr_inst->effective_opsize & extended_insts[i].info.opsize) {
-                        curr_inst->mnemonic = extended_insts[i].info.mnemonic;
-                        curr_inst->opcount = extended_insts[i].info.opcount;
-                        dis->curr_inst_offset++;
-                        break;
-                    }
+            i = binary_search_lower(extended_insts, 0, extended_insts_len - 1, curr_inst->opcode2);
+            if (i < 0) return extended_insts[0xff].info;
+            for (; extended_insts[i].opcode == curr_inst->opcode2; i++) {
+                if (curr_inst->effective_opsize & extended_insts[i].info.opsize) {
+                    curr_inst->mnemonic = extended_insts[i].info.mnemonic;
+                    curr_inst->opcount = extended_insts[i].info.opcount;
+                    dis->curr_inst_offset++;
+                    break;
                 }
             }
             return extended_insts[i].info;
         } else {
+            // one-byte opcode with opcode extension, e.g. 0x83
             curr_inst->modrm = *(ptr_opcode + 1);
             for (i = 0; extended_group_insts[i].info.opsize != 0 && extended_group_insts[i].opcode <= curr_inst->opcode1; i++) {
                 if (extended_group_insts[i].opcode == curr_inst->opcode1 &&
