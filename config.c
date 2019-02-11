@@ -10,8 +10,6 @@
 DisassemblerConfig cf = {0};
 
 void conf_parse_args(int argc, char **argv) {
-    // default value for start_address. -1 means to set the PE entry point as the start_address.
-    cf.start_address = -1;
     // loop through argv
     for (int i = 0; i < argc; i++) {
         if (strcmp(argv[i], "-m16") == 0) {
@@ -23,7 +21,9 @@ void conf_parse_args(int argc, char **argv) {
         } else if (strcmp(argv[i], "-s") == 0) {
             cf.size_to_disasm = (unsigned int)strtol(argv[i+1], 0, 10);
         } else if (strcmp(argv[i], "-a") == 0) {
-            cf.start_address = strtol(argv[i+1], 0, 16);
+            cf.start_address = strtoul(argv[i+1], 0, 16);
+        } else if (strcmp(argv[i], "-b") == 0) {
+            cf.image_base = strtoul(argv[i+1], 0, 16);
         } else if (*argv[i] == '-') {
             fprintf(stderr, "conf_parse_args(): ignoring invalid argument '%s'!\n", argv[i]);
         } else {

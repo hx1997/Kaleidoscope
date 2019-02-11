@@ -19,7 +19,8 @@ typedef struct {
     BitWidth mode_bitwidth;
     const char *disasm_file;
     unsigned int size_to_disasm;
-    long int start_address;
+    unsigned long int start_address;
+    unsigned long int image_base;
 } DisassemblerConfig;
 extern DisassemblerConfig cf;
 

@@ -9,7 +9,7 @@
 #include <windows.h>
 
 int parse_pe(FILE *fp, PIMAGE_OPTIONAL_HEADER32 ptr_opt_header, PIMAGE_SECTION_HEADER ptr_code_sect_header);
-long int raw_to_rva(long int raw_addr, PIMAGE_OPTIONAL_HEADER32 ptr_opt_header, PIMAGE_SECTION_HEADER ptr_sect_header);
-unsigned long int get_pe_ep_addr(FILE *fp, long int *rva);
+DWORD raw_to_rva(DWORD raw_addr, PIMAGE_OPTIONAL_HEADER32 ptr_opt_header, PIMAGE_SECTION_HEADER ptr_sect_header);
+DWORD get_pe_ep_addr(FILE *fp, DWORD *rva);
 
 #endif //KALEIDOSCOPE_PEPARSER_H

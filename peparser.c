@@ -47,11 +47,11 @@ int parse_pe(FILE *fp, PIMAGE_OPTIONAL_HEADER32 ptr_opt_header, PIMAGE_SECTION_H
     return -1;
 }
 
-long int raw_to_rva(long int raw_addr, PIMAGE_OPTIONAL_HEADER32 ptr_opt_header, PIMAGE_SECTION_HEADER ptr_sect_header) {
+DWORD raw_to_rva(DWORD raw_addr, PIMAGE_OPTIONAL_HEADER32 ptr_opt_header, PIMAGE_SECTION_HEADER ptr_sect_header) {
     return ptr_sect_header->VirtualAddress + ptr_opt_header->ImageBase + (raw_addr - ptr_sect_header->PointerToRawData);
 }
 
-unsigned long int get_pe_ep_addr(FILE *fp, long int *rva) {
+DWORD get_pe_ep_addr(FILE *fp, DWORD *rva) {
     IMAGE_OPTIONAL_HEADER32 opt_header = {0};
     IMAGE_SECTION_HEADER code_sect_header = {0};
 

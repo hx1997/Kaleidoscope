@@ -6,6 +6,7 @@
 #define KALEIDOSCOPE_DISASSEMBLE_H
 
 #include <stdint.h>
+#include <windows.h>
 #include "instruction.h"
 
 #define ASM_BUFSIZE 128
@@ -70,8 +71,8 @@ typedef struct {
     uint32_t curr_inst_offset;
 } Disassembly;
 
-int disasm_byte_buf(unsigned char buf[], unsigned int bufsize, int start_address);
-int disasm_pe_file(const char *file, unsigned int size, long int start_address);
+int disasm_byte_buf(unsigned char buf[], unsigned int bufsize, unsigned long int start_address);
+int disasm_pe_file(const char *file, unsigned int size, DWORD start_address);
 
 extern Inst standard_insts[];
 extern Inst extended_insts[];

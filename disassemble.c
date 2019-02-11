@@ -6,7 +6,6 @@
 #include <string.h>
 #include <assert.h>
 #include "peparser.h"
-#include <winnt.h>
 #include "disassemble.h"
 #include "instruction.h"
 #include "config.h"
@@ -511,7 +510,7 @@ int disasm_one_inst_x86(unsigned const char buf[], Disassembly *dis, CurrentInst
     return delta;
 }
 
-int translate_inst_into_intel(CurrentInst curr_inst, char buf[], size_t bufsize, int start_address, int delta) {
+int translate_inst_into_intel(CurrentInst curr_inst, char buf[], size_t bufsize, unsigned long int start_address, int delta) {
     int i = 0;
 
     memset(buf, 0, bufsize);
@@ -605,13 +604,13 @@ int translate_inst_into_intel(CurrentInst curr_inst, char buf[], size_t bufsize,
             case ASM_ADDR_JMP_RELATIVE:
                 switch (curr_inst.relative_offset.size) {
                     case 8:
-                        sprintf(buf, "%s0x%x", buf, curr_inst.relative_offset.offset8 + (int8_t)delta + start_address);
+                        sprintf(buf, "%s0x%lx", buf, curr_inst.relative_offset.offset8 + (int8_t)delta + start_address);
                         break;
                     case 16:
-                        sprintf(buf, "%s0x%x", buf, curr_inst.relative_offset.offset16 + (int16_t)delta + start_address);
+                        sprintf(buf, "%s0x%lx", buf, curr_inst.relative_offset.offset16 + (int16_t)delta + start_address);
                         break;
                     case 32:
-                        sprintf(buf, "%s0x%x", buf, curr_inst.relative_offset.offset32 + (int32_t)delta + start_address);
+                        sprintf(buf, "%s0x%lx", buf, curr_inst.relative_offset.offset32 + (int32_t)delta + start_address);
                         break;
                     default:
                         break;
@@ -774,7 +773,7 @@ void init_disasm_struct(Disassembly *dis) {
     dis->asm_buf_size = ASM_BUFSIZE;
 }
 
-int disasm_byte_buf_x86(unsigned char buf[], unsigned int bufsize, int start_address) {
+int disasm_byte_buf_x86(unsigned char buf[], unsigned int bufsize, unsigned long int start_address) {
     int delta;
     Disassembly dis;
 
@@ -784,7 +783,7 @@ int disasm_byte_buf_x86(unsigned char buf[], unsigned int bufsize, int start_add
     for (int i = 0; i < bufsize; i += delta, start_address += delta) {
         CurrentInst curr_inst = {0};
         delta = disasm_one_inst_x86(buf, &dis, &curr_inst);
-        printf("%08x: ", start_address);
+        printf("%08lx: ", start_address + cf.image_base);
 
         // print the opcode. 50 should suffice because the longest possible x86 inst is 15 bytes.
         char opcode_str[50] = "";
@@ -801,7 +800,7 @@ int disasm_byte_buf_x86(unsigned char buf[], unsigned int bufsize, int start_add
     return 0;
 }
 
-int disasm_byte_buf(unsigned char buf[], unsigned int bufsize, int start_address) {
+int disasm_byte_buf(unsigned char buf[], unsigned int bufsize, unsigned long int start_address) {
     int ret = 0;
 
     switch (cf.mode_isa) {
@@ -813,7 +812,7 @@ int disasm_byte_buf(unsigned char buf[], unsigned int bufsize, int start_address
     return ret;
 }
 
-int disasm_pe_file(const char *file, unsigned int size, long int start_address) {
+int disasm_pe_file(const char *file, unsigned int size, DWORD start_address) {
     if (!file || size <= 0) {
         fprintf(stderr, "disasm_pe_file(): invalid arguments!\n");
         return -1;
@@ -832,9 +831,9 @@ int disasm_pe_file(const char *file, unsigned int size, long int start_address) 
         return -1;
     }
 
-    // if start_address is negative, set it to the address of the PE entry point
-    if (start_address < 0) {
-        long int rva;
+    // if start_address is 0 (by default), set it to the address of the PE entry point
+    if (start_address == 0) {
+        DWORD rva;
         start_address = get_pe_ep_addr(fp, &rva);
         if (start_address <= 0) {
             return -1;
