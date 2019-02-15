@@ -608,13 +608,13 @@ int translate_inst_into_intel(CurrentInst curr_inst, char buf[], size_t bufsize,
             case ASM_ADDR_JMP_RELATIVE:
                 switch (curr_inst.relative_offset.size) {
                     case 8:
-                        sprintf(buf, "%s0x%lx", buf, curr_inst.relative_offset.offset8 + (int8_t)delta + start_address);
+                        sprintf(buf, "%s0x%lx", buf, curr_inst.relative_offset.offset8 + (int8_t)delta + start_address + cf.image_base);
                         break;
                     case 16:
-                        sprintf(buf, "%s0x%lx", buf, curr_inst.relative_offset.offset16 + (int16_t)delta + start_address);
+                        sprintf(buf, "%s0x%lx", buf, curr_inst.relative_offset.offset16 + (int16_t)delta + start_address + cf.image_base);
                         break;
                     case 32:
-                        sprintf(buf, "%s0x%lx", buf, curr_inst.relative_offset.offset32 + (int32_t)delta + start_address);
+                        sprintf(buf, "%s0x%lx", buf, curr_inst.relative_offset.offset32 + (int32_t)delta + start_address + cf.image_base);
                         break;
                     default:
                         break;
