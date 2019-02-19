@@ -87,7 +87,7 @@ typedef enum {
     ADDR_MODRM_FPREG_MEM,
 } AddressingMethod;
 
-#define ADDR_16BIT_REGSITER (ADDR_AX)
+#define ADDR_16BIT_REGISTER (ADDR_AX)
 
 // operand type
 // http://sparksandflames.com/files/x86InstructionChart.html

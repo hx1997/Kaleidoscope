@@ -15,9 +15,7 @@ int binary_search_lower(Inst insts[], int l, int r, int key) {
             return -1;
     }
 
-    if (insts[mid].opcode == key)
-        return binary_search_lower(insts, l, mid - 1, key);
-    else if (insts[mid].opcode > key)
+    if (insts[mid].opcode >= key)
         return binary_search_lower(insts, l, mid - 1, key);
     else
         return binary_search_lower(insts, mid + 1, r, key);
